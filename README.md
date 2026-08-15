@@ -25,7 +25,11 @@ Tauri 为开发者提供了三大主要优势，可用于构建应用程序：
 使用 tauri cli 前置要求：https://tauri.app/zh-cn/start/prerequisites/ 需要先根据不同操作系统，安装对应的工具链，例如：rust
 安装。
 
+下面我以 macos 系统为例，安装 tauri 相关工具链。
+
 ```shell
+rustup target add aarch64-apple-ios x86_64-apple-ios aarch64-apple-ios-sim
+brew install cocoapods
 cargo install create-tauri-app --locked
 cargo create-tauri-app
 ```
