@@ -61,7 +61,7 @@ For iOS development, run:
 
 ![tari-create-app.png](tari-create-app.png)
 
-上面的提示说明，dioxus工具链需要安装
+上面的提示说明，dioxus工具链需要安装 (这里ui风格，我选择了dioxus，因此需要安装dioxus相关工具链)
 
 ```shell
 rustup target add wasm32-unknown-unknown
