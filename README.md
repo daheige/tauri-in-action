@@ -168,6 +168,7 @@ tree -L 2 ./
 - src-tauri/src/main.rs 是桌面端的主入口点，我们在 main 函数中调用 tauri_demo_lib::run()
   ，以使用与移动端相同的入口点。因此，为了简化操作，请勿修改此文件，而是修改
   lib.rs。请注意，app_lib 对应 Cargo.toml 中的 [lib.name]。
+- src/main.rs和src/app.rs 表示使用的开发语言是rust，我们可以在这个目录中更改相关代码。
 
 Tauri 的工作方式类似于静态网站托管服务。其构建过程是：首先将 JavaScript 项目编译为静态文件， 然后编译 Rust
 项目并将这些静态文件打包进去。因此，JavaScript 项目的设置与构建静态网站时基本相同。
