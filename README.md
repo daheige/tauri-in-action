@@ -22,6 +22,9 @@ Tauri 为开发者提供了三大主要优势，可用于构建应用程序：
 
 # tauri tools install
 
+使用 tauri cli 前置要求：https://tauri.app/zh-cn/start/prerequisites/ 需要先根据不同操作系统，安装对应的工具链，例如：rust
+安装。
+
 ```shell
 cargo install create-tauri-app --locked
 cargo create-tauri-app
