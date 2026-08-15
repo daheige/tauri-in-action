@@ -173,3 +173,14 @@ Tauri 的工作方式类似于静态网站托管服务。其构建过程是：�
 项目并将这些静态文件打包进去。因此，JavaScript 项目的设置与构建静态网站时基本相同。
 
 如果你只想使用 Rust 代码，只需移除其他所有内容，并将 src-tauri/ 文件夹作为你的顶级项目，或作为 Rust 工作区的成员即可。
+
+# create-tauri-app
+
+Tauri 之所以如此灵活，原因之一在于它几乎可以与任何前端框架协同工作。 我们可以通过 create-tauri-app
+工具创建项目，同时它帮助你使用官方维护的框架模板创建一个新的 Tauri 项目。
+
+create-tauri-app 目前包含以下模板：原生（即不使用框架的HTML、CSS 和
+JavaScript）、Vue.js、Svelte、React、SolidJS、Angular、Preact、Yew、Leptos 和 Sycamore。你还可以在 Awesome Tauri
+仓库中查找或添加由社区提供的其他模板和框架。
+
+或者，你也可以 将 Tauri 添加到现有的项目中 快速将你现有的代码库转换为 Tauri 应用。
