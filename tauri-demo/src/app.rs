@@ -8,6 +8,7 @@ static CSS: Asset = asset!("/assets/styles.css");
 static TAURI_ICON: Asset = asset!("/assets/tauri.svg");
 static DIOXUS_ICON: Asset = asset!("/assets/dioxus.png");
 
+// 向前端暴露 invoke 函数，实现 js 桥接
 #[wasm_bindgen]
 extern "C" {
     #[wasm_bindgen(js_namespace = ["window", "__TAURI__", "core"])]
@@ -78,6 +79,7 @@ pub fn App() -> Element {
                 button { r#type: "submit", "Greet" }
             }
             p { "{greet_msg}" }
+            p { "支持热更新" }
         }
     }
 }

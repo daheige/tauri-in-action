@@ -157,10 +157,10 @@ tree -L 2 ./
 在这种情况下，JavaScript 项目位于顶层目录，而 Rust 项目则位于 src-tauri/ 文件夹内。 这个 Rust 项目是一个标准的 Cargo
 项目但包含了一些额外的文件：
 
-- tauri.conf.json 是 Tauri 的主要配置文件，其中包含了从应用标识符到开发服务器 URL 的所有配置。 该文件也是 Tauri CLI 查找
+- tauri.conf.json 是 Tauri 的主要配置文件，其中包含了从应用标识符到开发服务器 URL 的所有配置。该文件也是 Tauri CLI 查找
   Rust 项目的标记文件。 如需了解更多信息，请参阅 Tauri 配置。
 - capabilities/ 目录是 Tauri 默认读取能力（Capability）文件的文件夹（简而言之，你需要在此处允许命令，才能在 JavaScript
-  代码中使用它们）。 如需了解更多信息，请参阅安全。
+  代码中使用它们）。如需了解更多信息，请参阅安全。
 - icons/ 目录是 tauri icon 命令的默认输出目录，通常在 tauri.conf.json > bundle > icon 中引用，用于设置应用的图标。
 - src-tauri/build.rs 包含 tauri_build::build()，用于 Tauri 的构建系统。
 - src-tauri/lib.rs 包含 Rust 代码和移动端入口点（标记为 #[cfg_attr(mobile, tauri::mobile_entry_point)] 的函数）。
