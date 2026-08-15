@@ -95,8 +95,9 @@ cargo tauri ios dev
 我使用 macos 系统初始化，效果如下：
 ![ios-tauri-init.png](ios-tauri-init.png)
 
-执行 `cargo tauri dev` 运行后，就会启动一个 desktop 运行窗口，效果如下：
+执行 `cargo tauri dev` 运行后，就会启动一个 desktop 运行窗口（浏览器也可以访问），效果如下：
 ![tauri-dev.png](tauri-dev.png)
+
 运行的效果，输出来自 src-tauri/src/lib.rs ，这里的 src-tauri/src/main.rs 只负责应用运行，比较薄的一层。实际上它运行会先执行
 build.rs 初始化
 
