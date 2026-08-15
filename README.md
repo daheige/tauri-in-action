@@ -97,6 +97,9 @@ cargo tauri android dev
 
 #For iOS development, run:
 cargo tauri ios dev
+
+#For app release build
+cargo tauri build
 ```
 
 我使用 macos 系统初始化，效果如下：

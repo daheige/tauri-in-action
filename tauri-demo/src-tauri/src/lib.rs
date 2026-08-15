@@ -1,4 +1,5 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+// 前后端通过 Rust Commands 通信，类型安全
 #[tauri::command]
 fn greet(name: &str) -> String {
     println!("call greet got name: {}", name);
