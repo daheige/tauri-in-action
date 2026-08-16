@@ -1,4 +1,4 @@
-use crate::config::MysqlConf;
+use crate::infra::config::MysqlConf;
 use anyhow::{Context, Result};
 use sqlx::mysql::{MySqlConnectOptions, MySqlPool, MySqlPoolOptions, MySqlSslMode};
 use std::str::FromStr;

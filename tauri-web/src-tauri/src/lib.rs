@@ -1,76 +1,60 @@
-mod config;
-mod db;
-mod models;
-mod web;
+mod application;
+mod domain;
+mod infra;
+mod interfaces;
+mod providers;
 
-use config::AppConfig;
-use sqlx::MySqlPool;
+use providers::AppProvider;
 use tauri::Manager;
 
-/// 桌面端入口：
-/// 1. 加载 config/app.yaml 配置
-/// 2. 初始化 tracing 日志
-/// 3. 在后台异步任务中初始化 sqlx MySQL 连接池（需要 Tokio 上下文）
-///    并启动内嵌的 axum Web 服务；连接池通过 AppHandle 注册为 Tauri 状态
+/// 桌面端入口（组合编排，保持薄层）：
+///
+/// 1. providers 显式初始化：配置 -> 连接池 -> 仓储（以抽象注入）-> 应用服务
+/// 2. 注册应用服务为 Tauri 状态（供 interfaces/rpc 命令注入）
+/// 3. 后台启动 interfaces/http 的 axum Web 服务
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
-            // 1. 加载配置
-            let cfg = AppConfig::load()?;
+            // 1. 显式初始化（依赖装配）
+            //    block_on 提供 Tokio 上下文（sqlx 连接池创建需要）
+            let provider = tauri::async_runtime::block_on(AppProvider::init())?;
+            let config = provider.config.clone();
 
             // 2. 初始化日志
-            init_tracing(&cfg);
+            init_tracing(&config);
 
             // redis 配置仅保留解析（本示例未接入），启动时打印便于确认
-            if let Some(redis) = &cfg.redis_conf {
+            if let Some(redis) = &config.redis_conf {
                 tracing::debug!("redis 配置已加载: {}", redis.dsn);
             }
 
-            // 3. 后台任务：初始化 MySQL 连接池 + 启动 axum Web 服务
-            //    注意：setup 钩子运行在主线程、没有 Tokio 上下文，
-            //    sqlx 连接池的创建必须在异步任务/运行时内进行。
-            let handle = app.handle().clone();
-            let port = cfg.app_port;
-            let mysql_conf = cfg.mysql_conf.clone();
-            tauri::async_runtime::spawn(async move {
-                let pool = match db::init_pool(&mysql_conf) {
-                    Ok(p) => p,
-                    Err(e) => {
-                        tracing::error!("初始化 mysql 连接池失败: {e:#}");
-                        return;
-                    }
-                };
-                handle.manage(pool.clone());
-                tracing::info!("mysql 连接池就绪: {}", mysql_conf.dsn);
+            // 3. 注册应用服务为 Tauri 状态，供 tauri 命令依赖注入
+            app.manage(provider.user_service.clone());
 
-                if let Err(e) = web::run_server(port, pool).await {
+            // 4. 后台启动 axum Web 服务（interfaces/http）
+            let service = provider.user_service.clone();
+            let port = config.app_port;
+            tauri::async_runtime::spawn(async move {
+                if let Err(e) = crate::interfaces::http::run_server(port, service).await {
                     tracing::error!("axum server 退出: {e:#}");
                 }
             });
 
-            tracing::info!("{} 启动完成，web 端口: {}", cfg.app_name, cfg.app_port);
+            tracing::info!("{} 启动完成，web 端口: {}", config.app_name, config.app_port);
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![get_users])
+        .invoke_handler(tauri::generate_handler![
+            crate::interfaces::rpc::user_command::get_users
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-fn init_tracing(cfg: &AppConfig) {
-    let filter = tracing_subscriber::EnvFilter::try_new(&cfg.log_level)
+fn init_tracing(config: &crate::infra::config::AppConfig) {
+    let filter = tracing_subscriber::EnvFilter::try_new(&config.log_level)
         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
     tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_target(false)
         .init();
-}
-
-/// Tauri 命令：从 MySQL 读取 users 表（前端通过 window.__TAURI__.core.invoke 调用）
-#[tauri::command]
-async fn get_users(pool: tauri::State<'_, MySqlPool>) -> Result<Vec<models::User>, String> {
-    let users = sqlx::query_as::<_, models::User>("SELECT id, username FROM users ORDER BY id")
-        .fetch_all(&*pool)
-        .await
-        .map_err(|e| e.to_string())?;
-    Ok(users)
 }

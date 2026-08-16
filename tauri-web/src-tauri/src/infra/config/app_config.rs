@@ -2,7 +2,7 @@ use anyhow::{Context, Result};
 use serde::Deserialize;
 use std::path::PathBuf;
 
-/// 应用配置，对应 config/app.yaml
+/// 应用配置，对应项目根目录的 app.yaml
 #[derive(Debug, Clone, Deserialize)]
 pub struct AppConfig {
     pub app_name: String,
@@ -45,15 +45,15 @@ pub struct MysqlConf {
 
 impl AppConfig {
     /// 加载配置：优先使用 APP_CONFIG 环境变量指定的路径；
-    /// 否则按顺序尝试 ./config/app.yaml（项目根目录运行）与
-    /// ../config/app.yaml（在 src-tauri 目录运行）。
+    /// 否则按顺序尝试 ./app.yaml（项目根目录运行）与
+    /// ../app.yaml（在 src-tauri 目录运行）。
     pub fn load() -> Result<Self> {
         if let Ok(path) = std::env::var("APP_CONFIG") {
             return Self::load_from(&PathBuf::from(path));
         }
         let candidates = [
-            PathBuf::from("config/app.yaml"),
-            PathBuf::from("../config/app.yaml"),
+            PathBuf::from("app.yaml"),
+            PathBuf::from("../app.yaml"),
         ];
         let mut last_err = None;
         for path in &candidates {

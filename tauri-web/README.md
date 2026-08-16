@@ -5,17 +5,48 @@ Tauri 桌面应用 + 内嵌 axum Web 服务，通过 rust sqlx 读取 MySQL 数�
 - 桌面端：Tauri 2（macOS/Windows/Linux），前端为原生 HTML/CSS/JS，无构建工具
 - Web 框架：axum `0.8.9`（内嵌于应用进程，监听 `127.0.0.1:1338`）
 - 数据库组件：rust `sqlx`（MySQL 连接池，配置项与连接池参数一一对应）
+- 架构：**DDD 分层 + 严格面向接口编程**（domain / application / infra / interfaces / providers）
 - 功能：users 表**增删改查 + 分页**，前端可视化演示
 - 数据读取：提供两种方式
-  1. HTTP API：`fetch http://127.0.0.1:1338/api/users`
-  2. Tauri 命令：`window.__TAURI__.core.invoke('get_users')`（全量查询演示）
+    1. HTTP API：`fetch http://127.0.0.1:1338/api/users`
+    2. Tauri 命令：`window.__TAURI__.core.invoke('get_users')`（全量查询演示）
+
+`cargo tauri dev` 运行效果如下：
+![tauri-dev.png](tauri-dev.png)
+
+## 分层架构（DDD + 面向接口）
+
+```text
+interfaces (http/rpc)  ──►  application (UserService)  ──►  domain (UserRepository 接口)
+      ▲                              ▲                            ▲
+      │                              │                            │
+  providers（组合根：显式初始化、依赖注入）                          │
+                                                                  │
+      infra（config 配置读取 / persistence 持久化实现）────────────┘
+```
+
+| 层           | 目录                | 职责                                                                            | 依赖          |
+|-------------|-------------------|-------------------------------------------------------------------------------|-------------|
+| domain      | `src/domain`      | 领域实体 `User`、仓储接口 `UserRepository`、`RepoError`；不依赖任何框架                         | 无           |
+| application | `src/application` | 业务编排：`UserService` 只依赖 `UserRepository` 抽象；DTO 入参/出参；用户名校验、分页规则               | domain      |
+| infra       | `src/infra`       | 基础设施：`config` 配置读取；`persistence` sqlx MySQL 连接池 + `UserRepository` 的 MySQL 实现 | domain      |
+| interfaces  | `src/interfaces`  | 外部交付：`http`（axum router/handler/错误映射）、`rpc`（Tauri 命令）；不含业务逻辑                  | application |
+| providers   | `src/providers`   | 组合根：显式初始化（配置→连接池→仓储→服务），以抽象注入具体实现（依赖倒置）                                       | 全部          |
+
+设计要点：
+
+- **面向接口**：`domain` 定义 `UserRepository` trait，`infra/persistence` 提供 `MySqlUserRepository` 实现，
+  `application` 通过 `Arc<dyn UserRepository>` 使用抽象；只有 `providers` 知道具体实现是什么。
+- **依赖方向单向**：interfaces → application → domain ← infra；domain 不反向依赖任何上层。
+- **领域层纯净**：`User` 实体不含任何 ORM 注解，数据库行到实体的映射（`sqlx::FromRow`）写在 infra 层。
+- **错误分层**：domain 的 `RepoError` ← infra 映射 sqlx 错误；application 的 `ServiceError` 包装业务语义；
+  interfaces 的 `ApiError` 把 `ServiceError` 映射为 HTTP 状态码（400/404/500）。
 
 ## 目录结构
 
 ```ini
 tauri-web/
-├── config/
-│   └── app.yaml          # 应用配置（端口/日志/redis/mysql 连接池参数）
+├── app.yaml              # 应用配置（端口/日志/redis/mysql 连接池参数，位于项目根目录）
 ├── public/               # 前端静态资源（Tauri 编译时嵌入）
 │   ├── index.html
 │   ├── app.js
@@ -24,12 +55,22 @@ tauri-web/
 │   └── init.sql          # 建库建表 + 示例数据
 └── src-tauri/
     ├── src/
-    │   ├── main.rs       # 桌面端入口（薄层，勿修改）
-    │   ├── lib.rs        # 启动逻辑：加载配置 → 初始化连接池 → 启动 axum
-    │   ├── config.rs     # 配置文件解析（yaml）
-    │   ├── db.rs         # sqlx MySQL 连接池初始化
-    │   ├── models.rs     # users 表结构（FromRow + Serialize）
-    │   └── web.rs        # axum 路由 / 处理器
+    │   ├── main.rs                   # 桌面端入口（薄层，勿修改）
+    │   ├── lib.rs                    # 组合编排：providers 初始化 → 注册状态 → 启动 axum
+    │   ├── domain/                   # 领域层：实体 + 仓储接口（零框架依赖）
+    │   │   ├── entity/user.rs
+    │   │   └── repository/user_repository.rs
+    │   ├── application/              # 应用层：业务编排 + DTO
+    │   │   ├── dto/user_dto.rs
+    │   │   └── service/user_service.rs
+    │   ├── infra/                    # 基础设施层：配置读取 + 持久化实现
+    │   │   ├── config/app_config.rs
+    │   │   └── persistence/user_repository_mysql.rs
+    │   ├── interfaces/               # 接口层：HTTP API 与 Tauri 命令
+    │   │   ├── http/{router,handler,error}.rs
+    │   │   └── rpc/user_command.rs
+    │   └── providers/                # 组合根：显式初始化 + 依赖注入
+    │       └── app_provider.rs
     ├── capabilities/
     ├── icons/
     ├── build.rs
@@ -55,8 +96,9 @@ mysql -uroot -p < sql/init.sql
 表结构：
 
 ```sql
-CREATE TABLE `users` (
-    `id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
+CREATE TABLE `users`
+(
+    `id`       bigint unsigned NOT NULL AUTO_INCREMENT COMMENT '自增id',
     `username` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '' COMMENT '用户名',
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -64,7 +106,7 @@ CREATE TABLE `users` (
 
 ## 配置
 
-`config/app.yaml` 中的 `mysql_conf` 为 sqlx 连接池参数：
+`app.yaml`（项目根目录）中的 `mysql_conf` 为 sqlx 连接池参数：
 
 ```yaml
 mysql_conf:
@@ -79,8 +121,8 @@ mysql_conf:
 配置加载优先级：
 
 1. 环境变量 `APP_CONFIG` 指定的路径
-2. `./config/app.yaml`（项目根目录运行）
-3. `../config/app.yaml`（在 src-tauri 目录运行）
+2. `./app.yaml`（项目根目录运行）
+3. `../app.yaml`（在 src-tauri 目录运行）
 
 ## 运行
 
@@ -102,14 +144,14 @@ cargo tauri dev
 
 Base URL：`http://127.0.0.1:1338`
 
-| 方法 | 路径 | 说明 | 成功响应 |
-|---|---|---|---|
-| GET | `/api/health` | 健康检查（含 DB 连通性） | `{"status":"ok","db":"ok"}` |
-| GET | `/api/users?page=1&page_size=10` | 分页查询 users | `{"total":N,"page":1,"page_size":10,"items":[{id,username}]}` |
-| GET | `/api/users/{id}` | 按 id 查询 | `{"id":1,"username":"daheige"}` |
-| POST | `/api/users` | 新增用户，body `{"username":"xxx"}` | `201` + 新用户对象 |
-| PUT | `/api/users/{id}` | 更新用户名，body `{"username":"xxx"}` | 更新后的用户对象 |
-| DELETE | `/api/users/{id}` | 删除用户 | `204 No Content` |
+| 方法     | 路径                               | 说明                              | 成功响应                                                          |
+|--------|----------------------------------|---------------------------------|---------------------------------------------------------------|
+| GET    | `/api/health`                    | 健康检查（含 DB 连通性）                  | `{"status":"ok","db":"ok"}`                                   |
+| GET    | `/api/users?page=1&page_size=10` | 分页查询 users                      | `{"total":N,"page":1,"page_size":10,"items":[{id,username}]}` |
+| GET    | `/api/users/{id}`                | 按 id 查询                         | `{"id":1,"username":"daheige"}`                               |
+| POST   | `/api/users`                     | 新增用户，body `{"username":"xxx"}`  | `201` + 新用户对象                                                 |
+| PUT    | `/api/users/{id}`                | 更新用户名，body `{"username":"xxx"}` | 更新后的用户对象                                                      |
+| DELETE | `/api/users/{id}`                | 删除用户                            | `204 No Content`                                              |
 
 分页参数（均可省略）：`page` 默认 1，`page_size` 默认 10、最大 100。
 校验：`username` 非空、去首尾空白、长度 ≤ 100（与 `varchar(100)` 一致），不合法返回 `400`；id 不存在返回 `404`。
@@ -142,7 +184,7 @@ curl http://127.0.0.1:1338/api/users
   `window.__TAURI__.core.invoke('get_users')` 调用。
 - **数据库暂不可用？** 连接池使用 lazy 模式（`connect_lazy_with`），启动时不强连数据库，
   应用仍可启动，`/api/health` 会返回 `db: "error"`，数据库恢复后接口自动可用。
-- **端口占用**：axum 监听端口由 `config/app.yaml` 的 `app_port` 控制（默认 1338），
+- **端口占用**：axum 监听端口由根目录 `app.yaml` 的 `app_port` 控制（默认 1338），
   前端 `public/app.js` 中的 `API_BASE` 需与其保持一致。
 - **CORS**：前端页面（dev 为 `http://localhost:1420` 或打包后的 `tauri://localhost`）与 API
   不同源，axum 侧使用 `CorsLayer::permissive()` 放开跨域。

@@ -195,7 +195,8 @@ JavaScript）、Vue.js、Svelte、React、SolidJS、Angular、Preact、Yew、Lep
 
 - Web 框架：axum 0.8.9，内嵌于应用进程，监听 `127.0.0.1:1338`
 - 数据库组件：rust sqlx，对 MySQL `test.users` 表实现**增删改查 + 分页** API
-- 配置驱动：`config/app.yaml`（端口、日志级别、mysql 连接池参数）
+- 架构：**DDD 分层 + 面向接口编程**（domain / application / infra / interfaces / providers，仓储接口定义在 domain、实现在 infra）
+- 配置驱动：根目录 `app.yaml`（端口、日志级别、mysql 连接池参数）
 - 前端原生 HTML/JS，可视化演示新增/编辑/删除/分页，同时支持 HTTP API 与 Tauri invoke 两种方式
 
 ```shell
