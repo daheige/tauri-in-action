@@ -1,0 +1,213 @@
+:root {
+  color-scheme: light dark;
+  --bg: #f5f6fa;
+  --card: #ffffff;
+  --text: #1f2329;
+  --muted: #8a919f;
+  --primary: #3b82f6;
+  --ok: #16a34a;
+  --err: #dc2626;
+  --border: rgba(128, 128, 128, 0.22);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #181a1f;
+    --card: #21252c;
+    --text: #e6e8eb;
+    --muted: #8a919f;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  padding: 40px 16px;
+}
+
+.card {
+  width: 100%;
+  max-width: 680px;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 24px 28px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+  margin: 0 0 18px;
+  font-size: 20px;
+}
+
+h1 small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* 新增表单 */
+.create-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.create-form input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+}
+
+.create-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+}
+
+/* 工具栏 */
+.toolbar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.toolbar .spacer {
+  flex: 1;
+}
+
+.page-size {
+  font-size: 13px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-size select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 13px;
+}
+
+button {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: filter 0.15s;
+}
+
+button:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+button.ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: inherit;
+}
+
+button.danger {
+  color: var(--err);
+  border-color: var(--err);
+  background: transparent;
+}
+
+.status {
+  font-size: 13px;
+  color: var(--muted);
+  min-height: 20px;
+  margin: 0 0 12px;
+  word-break: break-all;
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.status.error {
+  color: var(--err);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+th {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+td.empty {
+  text-align: center;
+  color: var(--muted);
+}
+
+td.actions {
+  white-space: nowrap;
+}
+
+td.actions button {
+  padding: 5px 10px;
+  margin-right: 6px;
+  font-size: 12px;
+}
+
+.username-cell input {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+}
+
+/* 分页 */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 16px;
+  font-size: 13px;
+  color: var(--muted);
+}

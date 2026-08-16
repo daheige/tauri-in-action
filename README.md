@@ -188,3 +188,20 @@ JavaScript）、Vue.js、Svelte、React、SolidJS、Angular、Preact、Yew、Lep
 仓库中查找或添加由社区提供的其他模板和框架。
 
 或者，你也可以 将 Tauri 添加到现有的项目中 快速将你现有的代码库转换为 Tauri 应用。
+
+# tauri-web
+
+`tauri-web/` 是一个 Tauri 桌面应用 + 内嵌 axum Web 服务的示例项目：
+
+- Web 框架：axum 0.8.9，内嵌于应用进程，监听 `127.0.0.1:1338`
+- 数据库组件：rust sqlx，对 MySQL `test.users` 表实现**增删改查 + 分页** API
+- 配置驱动：`config/app.yaml`（端口、日志级别、mysql 连接池参数）
+- 前端原生 HTML/JS，可视化演示新增/编辑/删除/分页，同时支持 HTTP API 与 Tauri invoke 两种方式
+
+```shell
+cd tauri-web
+mysql -uroot -p < sql/init.sql   # 初始化 test.users
+cargo tauri dev                  # 运行
+```
+
+详见 [tauri-web/README.md](tauri-web/README.md)。

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>tauri-web · MySQL users</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="card">
+      <h1>tauri-web <small>axum 0.8.9 + sqlx + MySQL · users CRUD</small></h1>
+
+      <section class="create-form">
+        <input id="new-username" type="text" placeholder="输入用户名，点击新增" maxlength="100" />
+        <button id="btn-create" class="primary">新增</button>
+      </section>
+
+      <section class="toolbar">
+        <button id="btn-refresh">刷新列表</button>
+        <button id="btn-invoke">Tauri 命令查询（全量）</button>
+        <button id="btn-health">健康检查</button>
+        <span class="spacer"></span>
+        <label class="page-size">
+          每页
+          <select id="page-size">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+          </select>
+          条
+        </label>
+      </section>
+
+      <p id="status" class="status">—</p>
+
+      <table id="user-table">
+        <thead>
+          <tr>
+            <th style="width: 80px">ID</th>
+            <th>用户名</th>
+            <th style="width: 160px">操作</th>
+          </tr>
+        </thead>
+        <tbody id="user-body"></tbody>
+      </table>
+
+      <footer class="pagination">
+        <button id="btn-prev" class="ghost">上一页</button>
+        <span id="page-info">第 1 / 1 页（共 0 条）</span>
+        <button id="btn-next" class="ghost">下一页</button>
+      </footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,38 @@
+[package]
+name = "tauri-web"
+version = "0.1.0"
+description = "Tauri desktop app with embedded axum web server and sqlx MySQL"
+authors = ["heige"]
+edition = "2021"
+
+[lib]
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "tauri_web_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_yaml = "0.9"
+anyhow = "1"
+tokio = { version = "1", features = ["full"] }
+# web 框架，固定 0.8.9
+axum = "=0.8.9"
+tower-http = { version = "0.6", features = ["cors"] }
+# 数据库组件：rust sqlx (MySQL)
+sqlx = { version = "0.8", features = ["runtime-tokio", "mysql", "derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
