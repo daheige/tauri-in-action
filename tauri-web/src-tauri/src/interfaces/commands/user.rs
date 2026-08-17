@@ -1,4 +1,4 @@
-use crate::application::service::UserService;
+use crate::application::services::UserService;
 use crate::domain::entity::User;
 use tauri::State;
 

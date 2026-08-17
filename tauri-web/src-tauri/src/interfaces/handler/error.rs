@@ -1,4 +1,4 @@
-use crate::application::service::ServiceError;
+use crate::infra::errors::ServiceError;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;

@@ -1,5 +1,6 @@
 use crate::domain::entity::User;
-use crate::domain::repository::{RepoError, UserRepository};
+use crate::domain::repository::UserRepository;
+use crate::infra::errors::RepoError;
 use async_trait::async_trait;
 use sqlx::mysql::{MySqlPool, MySqlRow};
 use sqlx::Row;
@@ -8,15 +9,20 @@ use sqlx::Row;
 ///
 /// 这是基础设施层对领域接口的实现，可通过 providers 组合根
 /// 以抽象类型注入到应用服务（依赖倒置）。
-pub struct MySqlUserRepository {
+pub struct UserRepoImpl {
     pool: MySqlPool,
 }
 
-impl MySqlUserRepository {
-    pub fn new(pool: MySqlPool) -> Self {
-        Self { pool }
-    }
+pub fn new_user_repo(pool: MySqlPool) -> impl UserRepository {
+    UserRepoImpl { pool }
 }
+
+// 推荐使用 new_user_repo 函数方式创建 UserRepository trait 对象
+// impl UserRepoImpl {
+//     pub fn new(pool: MySqlPool) -> impl UserRepository {
+//         Self { pool }
+//     }
+// }
 
 /// 将 sqlx 的数据库错误映射为领域层 RepoError
 impl From<sqlx::Error> for RepoError {
@@ -36,7 +42,7 @@ impl<'r> sqlx::FromRow<'r, MySqlRow> for User {
 }
 
 #[async_trait]
-impl UserRepository for MySqlUserRepository {
+impl UserRepository for UserRepoImpl {
     async fn ping(&self) -> Result<(), RepoError> {
         sqlx::query("SELECT 1").execute(&self.pool).await?;
         Ok(())

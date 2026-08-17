@@ -1,7 +1,8 @@
-use crate::application::dto::{CreateUserInput, PageQuery, PageResult, UpdateUserInput};
-use crate::application::service::UserService;
+use crate::application::dto::page::{PageQuery, PageResult};
+use crate::application::dto::user::{CreateUserInput, UpdateUserInput};
+use crate::application::services::UserService;
 use crate::domain::entity::User;
-use crate::interfaces::http::error::ApiError;
+use crate::interfaces::handler::ApiError;
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use axum::Json;

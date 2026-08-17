@@ -3,14 +3,16 @@ mod domain;
 mod infra;
 mod interfaces;
 mod providers;
+mod server;
 
+use interfaces::commands::user::get_users;
 use providers::AppProvider;
 use tauri::Manager;
 
 /// 桌面端入口（组合编排，保持薄层）：
 ///
 /// 1. providers 显式初始化：配置 -> 连接池 -> 仓储（以抽象注入）-> 应用服务
-/// 2. 注册应用服务为 Tauri 状态（供 interfaces/rpc 命令注入）
+/// 2. 注册应用服务为 Tauri 状态（供 interfaces/commands 命令注入）
 /// 3. 后台启动 interfaces/http 的 axum Web 服务
 pub fn run() {
     tauri::Builder::default()
@@ -29,28 +31,29 @@ pub fn run() {
             }
 
             // 3. 注册应用服务为 Tauri 状态，供 tauri 命令依赖注入
-            app.manage(provider.user_service.clone());
+            app.manage(provider.services.user_service.clone());
 
             // 4. 后台启动 axum Web 服务（interfaces/http）
-            let service = provider.user_service.clone();
             let port = config.app_port;
             tauri::async_runtime::spawn(async move {
-                if let Err(e) = crate::interfaces::http::run_server(port, service).await {
+                if let Err(e) = server::run(port, provider.services).await {
                     tracing::error!("axum server 退出: {e:#}");
                 }
             });
 
-            tracing::info!("{} 启动完成，web 端口: {}", config.app_name, config.app_port);
+            tracing::info!(
+                "{} 启动完成，web 端口: {}",
+                config.app_name,
+                config.app_port
+            );
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![
-            crate::interfaces::rpc::user_command::get_users
-        ])
+        .invoke_handler(tauri::generate_handler![get_users])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-fn init_tracing(config: &crate::infra::config::AppConfig) {
+fn init_tracing(config: &infra::config::AppConfig) {
     let filter = tracing_subscriber::EnvFilter::try_new(&config.log_level)
         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info"));
     tracing_subscriber::fmt()

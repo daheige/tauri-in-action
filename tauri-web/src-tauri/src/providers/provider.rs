@@ -1,7 +1,8 @@
-use crate::application::service::UserService;
+use crate::application::services::{Services, UserService};
 use crate::domain::repository::UserRepository;
+use crate::infra::config::mysql::init_db_pool;
 use crate::infra::config::AppConfig;
-use crate::infra::persistence::{init_pool, MySqlUserRepository};
+use crate::infra::persistence::users::new_user_repo;
 use anyhow::Result;
 use std::sync::Arc;
 
@@ -14,7 +15,7 @@ use std::sync::Arc;
 /// 4. application       —— 构建应用服务（业务编排）
 pub struct AppProvider {
     pub config: AppConfig,
-    pub user_service: UserService,
+    pub services: Services,
 }
 
 impl AppProvider {
@@ -27,17 +28,14 @@ impl AppProvider {
         let config = AppConfig::load()?;
 
         // 2. MySQL 连接池（基础设施）
-        let pool = init_pool(&config.mysql_conf)?;
+        let pool = init_db_pool(&config.mysql_conf)?;
 
         // 3. 依赖倒置：具体实现 -> 抽象接口
-        let repo: Arc<dyn UserRepository> = Arc::new(MySqlUserRepository::new(pool));
+        let repo: Arc<dyn UserRepository> = Arc::new(new_user_repo(pool));
 
         // 4. 应用服务（业务编排，只依赖抽象）
         let user_service = UserService::new(repo);
-
-        Ok(Self {
-            config,
-            user_service,
-        })
+        let services = Services { user_service };
+        Ok(Self { config, services })
     }
 }

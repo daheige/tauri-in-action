@@ -1,14 +1,6 @@
 use crate::domain::entity::User;
+use crate::infra::errors::RepoError;
 use async_trait::async_trait;
-
-/// 仓储层错误。
-///
-/// 定义在领域层，具体数据库错误由基础设施层实现时映射到此类型。
-#[derive(Debug, thiserror::Error)]
-pub enum RepoError {
-    #[error("数据库访问失败: {0}")]
-    Db(String),
-}
 
 /// 用户仓储接口（面向接口编程的核心抽象）。
 ///

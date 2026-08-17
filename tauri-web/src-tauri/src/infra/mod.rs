@@ -4,3 +4,5 @@
 //! 依赖方向：infra -> domain。
 pub mod config;
 pub mod persistence;
+
+pub mod errors;

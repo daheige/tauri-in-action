@@ -1,3 +1,4 @@
-pub mod app_config;
+pub mod app;
+pub mod mysql;
 
-pub use app_config::{AppConfig, MysqlConf};
+pub use app::{AppConfig, MysqlConf};

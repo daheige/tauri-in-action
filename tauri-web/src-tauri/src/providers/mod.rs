@@ -2,6 +2,6 @@
 //!
 //! 按依赖倒置原则，所有具体实现在这里创建，并以其抽象类型
 //! （接口）注入到上层；本模块是唯一知道“具体用了什么实现”的地方。
-pub mod app_provider;
+mod provider;
 
-pub use app_provider::AppProvider;
+pub use provider::AppProvider;

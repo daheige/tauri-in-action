@@ -1,3 +1,3 @@
 pub mod user_repository;
 
-pub use user_repository::{RepoError, UserRepository};
+pub use user_repository::UserRepository;
