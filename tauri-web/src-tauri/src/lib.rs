@@ -12,8 +12,9 @@ use tauri::Manager;
 /// 桌面端入口（组合编排，保持薄层）：
 ///
 /// 1. providers 显式初始化：配置 -> 连接池 -> 仓储（以抽象注入）-> 应用服务
-/// 2. 注册应用服务为 Tauri 状态（供 interfaces/commands 命令注入）
-/// 3. 后台启动 interfaces/http 的 axum Web 服务
+/// 2. 初始化日志
+/// 3. 注册应用服务为 Tauri 状态（供 interfaces/commands 命令注入）
+/// 4. 后台启动内嵌 axum Web 服务（interfaces/routers -> server）
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
@@ -33,7 +34,7 @@ pub fn run() {
             // 3. 注册应用服务为 Tauri 状态，供 tauri 命令依赖注入
             app.manage(provider.services.user_service.clone());
 
-            // 4. 后台启动 axum Web 服务（interfaces/http）
+            // 4. 后台启动内嵌 axum Web 服务（server 层）
             let port = config.app_port;
             tauri::async_runtime::spawn(async move {
                 if let Err(e) = server::run(port, provider.services).await {

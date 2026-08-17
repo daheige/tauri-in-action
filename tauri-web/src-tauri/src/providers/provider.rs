@@ -11,7 +11,7 @@ use std::sync::Arc;
 /// 初始化顺序（也是依赖方向）：
 /// 1. infra/config      —— 读取配置文件
 /// 2. infra/persistence —— 创建 MySQL 连接池
-/// 3. 仓储实现以抽象注入 —— `MySqlUserRepository` 作为 `Arc<dyn UserRepository>`
+/// 3. 仓储实现以抽象注入 —— `UserRepoImpl` 作为 `Arc<dyn UserRepository>`
 /// 4. application       —— 构建应用服务（业务编排）
 pub struct AppProvider {
     pub config: AppConfig,

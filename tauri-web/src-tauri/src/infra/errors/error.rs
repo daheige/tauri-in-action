@@ -1,11 +1,7 @@
-/// 仓储层错误。
-///
-/// 定义在领域层，具体数据库错误由基础设施层实现时映射到此类型。
-#[derive(Debug, thiserror::Error)]
-pub enum RepoError {
-    #[error("数据库访问失败: {0}")]
-    Db(String),
-}
+//! 错误类型：仓储错误与应用层错误。
+//!
+//! `RepoError` 由基础设施层实现数据库访问时映射 sqlx 错误而来，
+//! `ServiceError` 面向接口层暴露业务错误语义（校验/不存在/数据访问失败）。
 
 /// 应用层错误：面向接口层暴露的业务错误语义
 #[derive(Debug, thiserror::Error)]
@@ -19,4 +15,11 @@ pub enum ServiceError {
     /// 数据访问失败（接口层映射为 500）
     #[error("数据访问失败: {0}")]
     Repo(#[from] RepoError),
+}
+
+/// 仓储层错误：基础设施层将 sqlx 错误映射为此类型
+#[derive(Debug, thiserror::Error)]
+pub enum RepoError {
+    #[error("数据库访问失败: {0}")]
+    Db(String),
 }

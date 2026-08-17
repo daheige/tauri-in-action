@@ -6,7 +6,7 @@ use async_trait::async_trait;
 ///
 /// - 接口定义在领域层（domain/repository）
 /// - 实现放在基础设施层（infra/persistence，基于 sqlx MySQL）
-/// - 应用层（application/service）只依赖本接口，不感知具体实现
+/// - 应用层（application/services）只依赖本接口，不感知具体实现
 #[async_trait]
 pub trait UserRepository: Send + Sync {
     /// 数据库连通性探测

@@ -24,7 +24,7 @@ pub fn new_user_repo(pool: MySqlPool) -> impl UserRepository {
 //     }
 // }
 
-/// 将 sqlx 的数据库错误映射为领域层 RepoError
+/// 将 sqlx 的数据库错误映射为 RepoError
 impl From<sqlx::Error> for RepoError {
     fn from(e: sqlx::Error) -> Self {
         RepoError::Db(e.to_string())
