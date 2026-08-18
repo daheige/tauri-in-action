@@ -191,6 +191,10 @@ td.actions button {
   font-size: 12px;
 }
 
+td.actions span {
+  vertical-align: middle;
+}
+
 .username-cell input {
   width: 100%;
   padding: 5px 8px;

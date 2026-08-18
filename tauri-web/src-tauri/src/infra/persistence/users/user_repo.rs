@@ -1,6 +1,5 @@
 use crate::domain::entity::User;
-use crate::domain::repository::UserRepository;
-use crate::infra::errors::RepoError;
+use crate::domain::repository::{RepoError, UserRepository};
 use async_trait::async_trait;
 use sqlx::mysql::{MySqlPool, MySqlRow};
 use sqlx::Row;

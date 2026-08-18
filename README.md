@@ -193,16 +193,17 @@ JavaScript）、Vue.js、Svelte、React、SolidJS、Angular、Preact、Yew、Lep
 
 `tauri-web/` 是一个 Tauri 桌面应用 + 内嵌 axum Web 服务的示例项目：
 
-- Web 框架：axum `0.8.9`，内嵌于应用进程，监听 `127.0.0.1:1338`
-- 数据库组件：rust `sqlx`，对 MySQL `test.users` 表实现**增删改查 + 分页** API
-- 架构：**DDD 分层 + 面向接口编程**
-  - `domain`：实体 `User` + 仓储接口 `UserRepository`
-  - `application/services`：业务编排 `UserService`；`application/dto`：分页与用户入参 DTO
-  - `infra`：`config` 配置读取 / `mysql` 连接池 / `persistence/users` 仓储实现 / `errors` 错误定义（RepoError / ServiceError）
+- **桌面端**：Tauri 2，原生 HTML/CSS/JS 前端，无构建工具
+- **Web 框架**：axum `0.8.9`，内嵌于应用进程，监听 `127.0.0.1:1338`
+- **数据库**：rust `sqlx` + MySQL，对 `test.users` 表实现**增删改查 + 分页**
+- **交付方式**：HTTP API + Tauri 命令（`invoke('get_users')`）
+- **架构**：**DDD 分层 + 面向接口编程**
+  - `domain`：实体 `User`、仓储接口 `UserRepository`、仓储错误 `RepoError`
+  - `application`：业务编排 `UserService`、DTO、应用错误 `ServiceError`
+  - `infra`：`config` 配置、`mysql` 连接池、`persistence/users` 仓储实现
   - `interfaces`：`handler`（axum handler）、`routers`（路由装配）、`commands`（Tauri 命令）
   - `server`：内嵌 axum 启动；`providers`：组合根、显式初始化与依赖注入
-- 配置驱动：根目录 `app.yaml`（端口、日志级别、redis/mysql 连接池参数）
-- 前端原生 HTML/JS，可视化演示新增/编辑/删除/分页，同时支持 HTTP API 与 Tauri invoke 两种方式
+- **配置驱动**：根目录 `app.yaml`（端口、日志级别、mysql 连接池参数）
 
 ```shell
 cd tauri-web

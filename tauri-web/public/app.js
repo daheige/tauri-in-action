@@ -65,9 +65,56 @@ function renderUsers(items) {
         <button class="ghost danger btn-delete">删除</button>
       </td>`;
     tr.querySelector(".btn-edit").addEventListener("click", () => startEdit(tr));
-    tr.querySelector(".btn-delete").addEventListener("click", () => deleteUser(u.id));
+    tr.querySelector(".btn-delete").addEventListener("click", () => startDeleteConfirm(tr, u));
     tbody.appendChild(tr);
   }
+}
+
+function startDeleteConfirm(tr, u) {
+  const actions = tr.querySelector(".actions");
+  actions.innerHTML = "";
+
+  const msg = document.createElement("span");
+  msg.textContent = "确认删除？";
+  msg.style.fontSize = "12px";
+  msg.style.color = "var(--err)";
+  msg.style.marginRight = "6px";
+
+  const btnConfirm = document.createElement("button");
+  btnConfirm.className = "danger";
+  btnConfirm.textContent = "确认";
+  const btnCancel = document.createElement("button");
+  btnCancel.className = "ghost";
+  btnCancel.textContent = "取消";
+
+  actions.append(msg, btnConfirm, btnCancel);
+
+  const restore = () => {
+    tr.innerHTML = `
+      <td>${u.id}</td>
+      <td class="username-cell">${escapeHtml(u.username)}</td>
+      <td class="actions">
+        <button class="ghost btn-edit">编辑</button>
+        <button class="ghost danger btn-delete">删除</button>
+      </td>`;
+    tr.querySelector(".btn-edit").addEventListener("click", () => startEdit(tr));
+    tr.querySelector(".btn-delete").addEventListener("click", () => startDeleteConfirm(tr, u));
+  };
+
+  btnCancel.addEventListener("click", restore);
+  btnConfirm.addEventListener("click", async () => {
+    await deleteUser(u.id);
+    // deleteUser 内部会重新加载列表，无需手动 restore
+  });
+
+  // 点击行外或其他行时取消当前确认；按 Escape 也可取消
+  const keyHandler = (e) => {
+    if (e.key === "Escape") {
+      restore();
+      document.removeEventListener("keydown", keyHandler);
+    }
+  };
+  document.addEventListener("keydown", keyHandler);
 }
 
 function startEdit(tr) {
@@ -155,10 +202,9 @@ async function updateUser(id, username) {
 }
 
 // ---------------------------------------------------------------------------
-// 删除
+// 删除（调用前需由 startDeleteConfirm 完成确认）
 // ---------------------------------------------------------------------------
 async function deleteUser(id) {
-  if (!confirm(`确认删除用户 id=${id} 吗？`)) return;
   setStatus("正在删除用户…");
   try {
     const res = await fetch(`${API_BASE}/api/users/${id}`, { method: "DELETE" });

@@ -1,5 +1,5 @@
 use crate::domain::entity::User;
-use crate::infra::errors::RepoError;
+use crate::domain::repository::RepoError;
 use async_trait::async_trait;
 
 /// 用户仓储接口（面向接口编程的核心抽象）。

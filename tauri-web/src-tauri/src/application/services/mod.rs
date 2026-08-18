@@ -1,5 +1,7 @@
+mod error;
 mod user_service;
 
+pub use error::ServiceError;
 pub use user_service::UserService;
 
 // Services 服务列表

@@ -1,8 +1,8 @@
 use crate::application::dto::page::{PageQuery, PageResult};
 use crate::application::dto::user::{CreateUserInput, UpdateUserInput};
+use crate::application::services::error::ServiceError;
 use crate::domain::entity::User;
 use crate::domain::repository::UserRepository;
-use crate::infra::errors::ServiceError;
 use std::sync::Arc;
 
 /// 用户应用服务：业务逻辑编排。
